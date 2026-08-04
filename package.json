@@ -1,46 +1,19 @@
-// Vercel Serverless Function
-// APIキーはここ（サーバー側）だけで使う。フロントには絶対に置かない。
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "POST only" });
-  }
-
-  const { system, userText } = req.body || {};
-  if (typeof system !== "string" || typeof userText !== "string") {
-    return res.status(400).json({ error: "bad request" });
-  }
-  // 想定外に長い入力を弾く（コスト事故の防止）
-  if (userText.length > 8000) {
-    return res.status(413).json({ error: "too long" });
-  }
-
-  try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        system,
-        messages: [{ role: "user", content: userText }],
-      }),
-    });
-
-    if (!r.ok) {
-      const detail = await r.text();
-      console.error("anthropic error", r.status, detail);
-      return res.status(502).json({ error: "upstream error" });
-    }
-
-    const data = await r.json();
-    return res.status(200).json({ content: data.content });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: "server error" });
+{
+  "name": "level-me",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
   }
 }
